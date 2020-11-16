@@ -11,6 +11,9 @@ const data = [];
 
 const excludeDatabases = ['admin', 'test', 'local', 'config'];
 
+const DB_SIZE = 50;
+const COLLECTIOn_SIZE = 10;
+
 const sort = (data, key) => {
   return data.sort((a, b) => {
     if (a[key] > b[key]) {
@@ -34,7 +37,7 @@ function main() {
     // dataSize as MB
     const dbSize = selectedDb.stats(1024*1024).dataSize;
 
-    if (dbSiz < 50) {
+    if (DB_SIZE < 50) {
       continue;
     }
 
@@ -45,7 +48,7 @@ function main() {
 
       const collectionStat = collection.stats(1024*1024);
 
-      if (collectionStat.storageSize < 10) {
+      if (collectionStat.storageSize < COLLECTION_SIZE) {
         continue;
       }
 
