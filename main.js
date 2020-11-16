@@ -12,7 +12,7 @@ const data = [];
 const excludeDatabases = ['admin', 'test', 'local', 'config'];
 
 const DB_SIZE = 50;
-const COLLECTIOn_SIZE = 10;
+const COLLECTION_SIZE = 10;
 
 const sort = (data, key) => {
   return data.sort((a, b) => {
