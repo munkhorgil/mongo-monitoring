@@ -4,15 +4,19 @@
  * email: munkhorgil@live.com
  * created date: 2020-11-16
 */
-
-const dbNames = db.getMongo().getDBNames();
 const connection = new Mongo();
+const dbNames = connection.getDBNames();
 const data = [];
+const sizeData = [];
 
 const excludeDatabases = ['admin', 'test', 'local', 'config'];
 
-const DB_SIZE = 50;
-const COLLECTION_SIZE = 10;
+// MB
+const DB_SIZE = 5;
+const COLLECTION_SIZE = 5;
+const DOCUMENT_SIZE = 1;
+
+const bytesToMegaBytes = bytes => bytes / (1024*1024);
 
 const sort = (data, key) => {
   return data.sort((a, b) => {
@@ -27,7 +31,9 @@ const sort = (data, key) => {
 }
 
 function main() {
-  for (const dbName of dbNames) {
+  for (let i = 0; i < dbNames.length; i++) {
+    const dbName = dbNames[i];
+
     if (excludeDatabases.includes(dbName)) {
       continue;
     }
@@ -37,7 +43,7 @@ function main() {
     // dataSize as MB
     const dbSize = selectedDb.stats(1024*1024).dataSize;
 
-    if (DB_SIZE < 50) {
+    if (dbSize < DB_SIZE) {
       continue;
     }
 
@@ -59,7 +65,6 @@ function main() {
         index: {
           numberOfIndexes: collectionStat.nindexes,
           totalIndexSize: collectionStat.totalIndexSize,
-          ...collectionStat.indexSizes
         },
         cache: {
           inCache: collectionStat.wiredTiger.cache["bytes currently in the cache"],
@@ -67,13 +72,31 @@ function main() {
           writeCache: collectionStat.wiredTiger.cache["bytes written from cache"]
         }
       });
+
+
+      collection.find().forEach(item => {
+        const size = bytesToMegaBytes(Object.bsonsize(item))
+
+        if (size > DOCUMENT_SIZE) {
+          sizeData.push({
+            [collectionName]: {
+              id: item._id,
+              size
+            }
+          });
+        }
+      })
     }
   }
 
   const filteredData = sort(data, 'storageSize');
 
-  for (const item of filteredData) {
-    print(JSON.stringify(item), '\n');
+  for (let j = 0; j < filteredData.length; j++) {
+    print(JSON.stringify(filteredData[j]), '\n');
+  }
+
+  for (let u = 0; u < sizeData.length; u++) {
+    print(JSON.stringify(sizeData[u]), '\n');
   }
 }
 
